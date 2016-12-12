@@ -2,6 +2,11 @@
 set -eo pipefail
 shopt -s nullglob
 
+# Script to auto configure memory allocation
+AUTO_MEMORY_CONFIG=/usr/local/bin/auto_memory_config.sh
+REPLICA_SETTING_CONF=/etc/mysql/conf.d/replica_settings.sh
+SERVER_ID=${SERVER_ID:-1}
+
 # if command starts with an option, prepend mysqld
 if [ "${1:0:1}" = '-' ]; then
 	set -- mysqld "$@"
@@ -64,6 +69,13 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	DATADIR="$(_datadir "$@")"
 	mkdir -p "$DATADIR"
 	chown -R mysql:mysql "$DATADIR"
+
+	if [ ! -z $MYSQL_AUTO_MEMORY_ALLOCATE ]; then
+		bash "$AUTO_MEMORY_CONFIG" "$MYSQL_AUTO_MEMORY_ALLOCATE"
+	fi
+
+	sed -i "s/SERVER_ID/$SERVER_ID/" "$REPLICA_SETTING_CONF"
+
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
 

@@ -50,6 +50,7 @@ RUN echo "deb https://repo.percona.com/apt jessie main" > /etc/apt/sources.list.
 
 ENV MARIADB_MAJOR 10.1
 ENV MARIADB_VERSION 10.1.19+maria-1~jessie
+ENV SERVER_ID 1
 
 RUN echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/debian jessie main" > /etc/apt/sources.list.d/mariadb.list \
 	&& { \
@@ -86,6 +87,7 @@ RUN { \
 RUN sed -Ei 's/^(bind-address|log)/#&/' /etc/mysql/my.cnf \
 	&& echo 'skip-host-cache\nskip-name-resolve' | awk '{ print } $1 == "[mysqld]" && c == 0 { c = 1; system("cat") }' /etc/mysql/my.cnf > /tmp/my.cnf \
 	&& mv /tmp/my.cnf /etc/mysql/my.cnf
+COPY replica_setting.cnf /etc/mysql/conf.d/replica_settings.cnf
 
 VOLUME /var/lib/mysql
 
