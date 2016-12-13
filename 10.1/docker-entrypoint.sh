@@ -23,6 +23,14 @@ for arg; do
 	esac
 done
 
+disable_binlog() {
+    sed -i 's/^log-bin/skip-log-bin/g' "$REPLICA_SETTING_CONF"
+}
+
+enable_binlog() {
+    sed -i 's/^skip-log-bin/log-bin/g' "$REPLICA_SETTING_CONF"
+}
+
 # usage: file_env VAR [DEFAULT]
 #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
 # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
@@ -65,12 +73,14 @@ _datadir() {
 
 # allow the container to be started with `--user`
 if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
+    # disable_binlog
 	sed -i "s/SERVER_ID/$SERVER_ID/" "$REPLICA_SETTING_CONF"
 
 	_check_config "$@"
 	DATADIR="$(_datadir "$@")"
 	mkdir -p "$DATADIR"
 	chown -R mysql:mysql "$DATADIR"
+    # chown -R mysql:mysql "$REPLICA_SETTING_CONF"
 
 	if [ ! -z $MYSQL_AUTO_MEMORY_ALLOCATE ]; then
 		bash "$AUTO_MEMORY_CONFIG" "$MYSQL_AUTO_MEMORY_ALLOCATE"
@@ -78,6 +88,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
+
 
 if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 	# still need to check config, container may have started with --user
@@ -96,10 +107,10 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		mkdir -p "$DATADIR"
 
 		echo 'Initializing database'
-		mysql_install_db --datadir="$DATADIR" --rpm
+		mysql_install_db --datadir="$DATADIR" --rpm --disable-log-bin
 		echo 'Database initialized'
 
-		"$@" --skip-networking &
+		"$@" --skip-networking --disable-log-bin &
 		pid="$!"
 
 		mysql=( mysql --protocol=socket -uroot )
@@ -180,5 +191,7 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		echo
 	fi
 fi
+
+# enable_binlog
 
 exec "$@"
