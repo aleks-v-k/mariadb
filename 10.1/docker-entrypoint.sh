@@ -65,6 +65,8 @@ _datadir() {
 
 # allow the container to be started with `--user`
 if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
+	sed -i "s/SERVER_ID/$SERVER_ID/" "$REPLICA_SETTING_CONF"
+
 	_check_config "$@"
 	DATADIR="$(_datadir "$@")"
 	mkdir -p "$DATADIR"
@@ -73,8 +75,6 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 	if [ ! -z $MYSQL_AUTO_MEMORY_ALLOCATE ]; then
 		bash "$AUTO_MEMORY_CONFIG" "$MYSQL_AUTO_MEMORY_ALLOCATE"
 	fi
-
-	sed -i "s/SERVER_ID/$SERVER_ID/" "$REPLICA_SETTING_CONF"
 
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
