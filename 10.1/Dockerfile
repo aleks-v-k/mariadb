@@ -51,6 +51,8 @@ RUN echo "deb https://repo.percona.com/apt jessie main" > /etc/apt/sources.list.
 ENV MARIADB_MAJOR 10.1
 ENV MARIADB_VERSION 10.1.19+maria-1~jessie
 ENV SERVER_ID 1
+ENV MYSQL_ROOT_PASSWORD mysql
+ENV MYSQL_AUTO_MEMORY_ALLOCATE innodb
 
 RUN echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/debian jessie main" > /etc/apt/sources.list.d/mariadb.list \
 	&& { \
@@ -92,6 +94,7 @@ COPY replica_settings.cnf /etc/mysql/conf.d/replica_settings.cnf
 VOLUME /var/lib/mysql
 
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY auto_memory_config.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
 ENTRYPOINT ["docker-entrypoint.sh"]
 
