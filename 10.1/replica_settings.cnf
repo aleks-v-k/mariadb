@@ -2,3 +2,7 @@
 log-bin
 server_id=SERVER_ID
 log-basename=binlog
+binlog_format=MIXED
+binlog_row_image=MINIMAL
+log-slave-updates=true
+enforce-gtid-consistency=true
