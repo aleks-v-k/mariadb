@@ -50,7 +50,7 @@ RUN echo "deb https://repo.percona.com/apt jessie main" > /etc/apt/sources.list.
 
 ENV MARIADB_MAJOR 10.1
 ENV MARIADB_VERSION 10.1.19+maria-1~jessie
-ENV SERVER_ID 1
+ENV SERVER_ID 0
 ENV MYSQL_ROOT_PASSWORD mysql
 ENV MYSQL_AUTO_MEMORY_ALLOCATE innodb
 

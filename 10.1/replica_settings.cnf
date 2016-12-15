@@ -5,3 +5,10 @@ log-basename=binlog
 binlog_format=MIXED
 binlog_row_image=MINIMAL
 log-slave-updates=true
+# I don't know now should we use replicate-same-server-id or no.
+# If we run clean server with unique server-id, then it will get all
+# transactions anyway. If we setup a server which was previously in the cluster
+# then it probably should not replay transactions which was performed earlier
+# by the server.
+# https://mariadb.com/kb/en/mariadb/mysqld-options/#-replicate-same-server-id
+# replicate-same-server-id=1
