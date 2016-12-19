@@ -6,7 +6,7 @@ shopt -s nullglob
 AUTO_MEMORY_CONFIG=/usr/local/bin/auto_memory_config.sh
 REPLICA_SETTING_CONF=/etc/mysql/conf.d/replica_settings.cnf
 SERVER_ID=${SERVER_ID:-0}
-if [ "SERVER_ID" == "0" ]; then
+if [ "$SERVER_ID" == "0" ]; then
     SERVER_ID="$(date +%s | rev | cut -c 1-2)$(echo ${RANDOM})"
 fi
 
