@@ -53,6 +53,13 @@ ENV MARIADB_VERSION 10.1.20+maria-1~jessie
 ENV SERVER_ID 0
 ENV MYSQL_ROOT_PASSWORD mysql
 ENV MYSQL_AUTO_MEMORY_ALLOCATE innodb
+# http://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_max_binlog_size
+ENV MYSQL_MAX_BINLOG_SIZE 1073741824
+# https://mariadb.com/kb/en/mariadb/replication-and-binary-log-server-system-variables/#expire_logs_days
+# http://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_expire_logs_days
+ENV MYSQL_EXPIRE_LOGS_DAYS 3
+# Use semi-sync replication
+ENV SEMI_SYNC_REPLICATION_ENABLED OFF
 
 RUN echo "deb http://ftp.osuosl.org/pub/mariadb/repo/$MARIADB_MAJOR/debian jessie main" > /etc/apt/sources.list.d/mariadb.list \
 	&& { \

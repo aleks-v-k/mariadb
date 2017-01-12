@@ -12,3 +12,14 @@ log-slave-updates=true
 # by the server.
 # https://mariadb.com/kb/en/mariadb/mysqld-options/#-replicate-same-server-id
 # replicate-same-server-id=1
+
+# Binlog lifetime
+max_binlog_size=MAX_BINLOG_SIZE
+expire_logs_days=EXPIRE_LOGS_DAYS
+
+# Semi-sync options
+rpl_semi_sync_master_enabled=SEMI_SYNC_REPLICATION_ENABLED
+rpl_semi_sync_slave_enabled=SEMI_SYNC_REPLICATION_ENABLED
+rpl_semi_sync_master_wait_point=AFTER_SYNC
+rpl_semi_sync_master_wait_no_slave=OFF
+rpl_semi_sync_master_timeout=10

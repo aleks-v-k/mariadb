@@ -15,6 +15,10 @@ if [ "${1:0:1}" = '-' ]; then
 	set -- mysqld "$@"
 fi
 
+if [ "$SEMI_SYNC_REPLICATION_ENABLED" == "ON" ]; then
+	set -- "$@" --plugin-load="rpl_semi_sync_master=semisync_master.so;rpl_semi_sync_slave=semisync_slave.so"
+fi
+
 # skip setup if they want an option that stops mysqld
 wantHelp=
 for arg; do
@@ -32,6 +36,15 @@ disable_binlog() {
 
 enable_binlog() {
     sed -i 's/^skip-log-bin/log-bin/g' "$REPLICA_SETTING_CONF"
+}
+
+set_semisync_settings() {
+    sed -i "s/SEMI_SYNC_REPLICATION_ENABLED/$SEMI_SYNC_REPLICATION_ENABLED/g" "$REPLICA_SETTING_CONF"
+    sed -i "s/^#rpl_semi_sync/rpl_semi_sync/g" "$REPLICA_SETTING_CONF"
+}
+
+unset_semisync_settings() {
+    sed -i "s/^rpl_semi_sync/#rpl_semi_sync/g" "$REPLICA_SETTING_CONF"
 }
 
 # usage: file_env VAR [DEFAULT]
@@ -58,6 +71,7 @@ file_env() {
 
 _check_config() {
 	toRun=( "$@" --verbose --help --log-bin-index="$(mktemp -u)" )
+
 	if ! errors="$("${toRun[@]}" 2>&1 >/dev/null)"; then
 		cat >&2 <<-EOM
 
@@ -78,6 +92,10 @@ _datadir() {
 if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
     # disable_binlog
 	sed -i "s/SERVER_ID/$SERVER_ID/" "$REPLICA_SETTING_CONF"
+	unset_semisync_settings
+
+    sed -i "s/MAX_BINLOG_SIZE/$MYSQL_MAX_BINLOG_SIZE/g" "$REPLICA_SETTING_CONF"
+    sed -i "s/EXPIRE_LOGS_DAYS/$MYSQL_EXPIRE_LOGS_DAYS/g" "$REPLICA_SETTING_CONF"
 
 	_check_config "$@"
 	DATADIR="$(_datadir "$@")"
@@ -89,6 +107,10 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" -a "$(id -u)" = '0' ]; then
 		bash "$AUTO_MEMORY_CONFIG" "$MYSQL_AUTO_MEMORY_ALLOCATE"
 	fi
 
+	if [ "$SEMI_SYNC_REPLICATION_ENABLED" == "ON" ]; then
+		# set_semisync_settings
+        echo "Skip settings to semisync replication"
+	fi
 	exec gosu mysql "$BASH_SOURCE" "$@"
 fi
 
@@ -193,6 +215,13 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 		echo 'MySQL init process done. Ready for start up.'
 		echo
 	fi
+
+    if [ "$SEMI_SYNC_REPLICATION_ENABLED" == "ON" ]; then
+        set -- "$@" --rpl-semi-sync-master-enabled=1 --rpl-semi-sync-slave-enabled=1 --rpl-semi-sync-master-wait-point=AFTER_SYNC --rpl-semi-sync-master-wait-no-slave=0
+    fi
+    # Set readonly mode so the new server will be treated as a slave by
+    # default
+    set -- "$@" --read_only
 fi
 
 # enable_binlog
