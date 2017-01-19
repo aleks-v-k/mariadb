@@ -221,7 +221,9 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
     fi
     # Set readonly mode so the new server will be treated as a slave by
     # default
-    set -- "$@" --read_only
+    # Stop slave if it was running. Slave initialization will provided by
+    # HA container
+    set -- "$@" --read_only --skip-slave-start
 fi
 
 # enable_binlog

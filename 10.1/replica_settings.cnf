@@ -12,6 +12,7 @@ log-slave-updates=true
 # by the server.
 # https://mariadb.com/kb/en/mariadb/mysqld-options/#-replicate-same-server-id
 # replicate-same-server-id=1
+gtid_strict_mode=ON
 
 # Binlog lifetime
 max_binlog_size=MAX_BINLOG_SIZE
